@@ -1,6 +1,6 @@
 const dbConnection = require("../db/dbConfig");
 const { StatusCodes } = require("http-status-codes");
-// const bcyrpt = require("bcrypt");
+const bcrypt = require("bcrypt");
 const register = async (req, res) => {
   const { userid, username, firstname, lastname, email, password } = req.body;
   if (!username || !firstname || !lastname || !email || !password) {
@@ -43,24 +43,39 @@ const register = async (req, res) => {
   }
 };
 
-// const login = async(req, res) => {
-//   const { username, password } = req.body;
-//   if (!username || !password) {
-//     return res.status(400).json({ message: "Please fill in all fields" });
-// };
-// try{
-//   const selectUsername = "SELECT username,password,userid,firstname FROM USER where email=?";
-//   const [user] = await dbConnection.query(selectUsername, [username]);
-//   if (!user) {
-//     return res.status(404).json({ msg: "User not found" });
-//     }
-//     const isValidPassword = await bcyrpt.compare(password, user.password);
-//     if (!isValidPassword) {
-//       return res.status(401).json({ msg: "Invalid password" });
-//     }
-// }
-// const checkUser = (req, res) => {
+const login = async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ message: "Please fill in all fields" });
+  }
+  try {
+    const selectUser =
+      "SELECT username,password,userid,firstname FROM users where username=?";
+    const [user] = await dbConnection.query(selectUser, [username]);
+if (!user || user.length === 0 || !user[0].password) {
+  return res
+    .status(StatusCodes.BAD_REQUEST)
+    .json({ msg: "User does not exist or invalid user data" });
+}
+const isValidPassword = await bcrypt.compare(password, user[0].password);
+// console.log("Retrieved user:", user);
+if (!isValidPassword) {
+  return res.status(StatusCodes.UNAUTHORIZED).json({ msg: "Invalid password" });
+}
+
+return res
+  .status(StatusCodes.ACCEPTED)
+  .json({ msg: "User logged in successfully" });
+
+  } catch (err) {
+    console.log(err.message);
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ msg: "something went wrong plz wait" });
+  }
+};
+// const checkUser =async (req, res) => {
 //   res.send("successfully checked");
 // };
 
-module.exports = { register };
+module.exports = { register, login };
