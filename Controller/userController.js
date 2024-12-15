@@ -66,7 +66,9 @@ const login = async (req, res) => {
         .json({ msg: "Invalid password" });
     }
     const userid = user[0].userid;
-    const token = jwt.sign({ username, userid }, "secret", { expiresIn: "3d" });
+    const token = jwt.sign({ username, userid }, process.env.JWT_SECRET, {
+      expiresIn: "3d"
+    });
 
     return res
       .status(StatusCodes.OK)
@@ -80,8 +82,8 @@ const login = async (req, res) => {
 };
 const checkUser = async (req, res) => {
   const { username, userid } = req.user;
-  // console.log(username, userid);
-res.send(`successfully checked ${username} ,${userid}`);
+  console.log("user is checked =>", username, userid);
+  res.send(`successfully checked ${username} ,${userid}`);
 };
 
 module.exports = { register, login, checkUser };
