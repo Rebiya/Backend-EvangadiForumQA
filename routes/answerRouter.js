@@ -5,6 +5,6 @@ const {
   PostSingleAns
 } = require("../Controller/answerController");
 router.get("/:question_id", GetSingleAns);
-router.post("/", PostSingleAns);
+router.post("/:question_id", PostSingleAns);
 
 module.exports = router;
